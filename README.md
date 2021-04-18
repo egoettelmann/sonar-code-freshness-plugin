@@ -1,4 +1,4 @@
-SonarQube CodeFreshness Plugin [![Build Status](https://travis-ci.org/SonarSource/sonar-code-freshness-plugin.svg?branch=develop)](https://travis-ci.org/egoettelmann/sonar-code-freshness-plugin)
+SonarQube CodeFreshness Plugin [![Build Status](https://travis-ci.com/egoettelmann/sonar-code-freshness-plugin.svg?branch=develop)](https://travis-ci.com/egoettelmann/sonar-code-freshness-plugin)
 ==========
 
 An SonarQube plugin to measure the code freshness of a project, compatible with SonarQube 8.x.
