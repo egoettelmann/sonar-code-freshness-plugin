@@ -4,9 +4,12 @@ yarn.lock
 target/
 node/
 .idea/
-sonar-example-plugin.iml
+*.iml
 
 # Eclipse
 .classpath
 .project
 .settings/
+
+# Dev env
+devops/data
