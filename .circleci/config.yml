@@ -1,0 +1,171 @@
+version: 2.1
+
+# Defining parameters
+parameters:
+  docker-image:
+    type: string
+    default: "circleci/openjdk:8u242-stretch"
+  branch-release:
+    type: string
+    default: "release"
+  branch-master:
+    type: string
+    default: "master"
+  branch-develop:
+    type: string
+    default: "develop"
+  git-user:
+    type: string
+    default: "CircleCI"
+  git-email:
+    type: string
+    default: "git@circleci.com"
+# Additionally, following variables need to be defined:
+# - GITHUB_TOKEN
+
+jobs:
+  # Update the current version of the project and commit
+  update-version:
+    docker:
+      - image: << pipeline.parameters.docker-image >>
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - m2-{{ checksum "pom.xml" }}
+            - m2-
+      - run:
+          name: "Update version"
+          command: |
+            mvn versions:set -DremoveSnapshot=true -DgenerateBackupPoms=false
+            mvn help:evaluate -N -Dexpression=project.version|grep -v '\['
+            PROJECT_VERSION=$(mvn help:evaluate -N -Dexpression=project.version|grep -v '\[')
+            git config user.name "<< pipeline.parameters.git-user >>"
+            git config user.email "<< pipeline.parameters.git-email >>"
+            git add .
+            git commit -m "[<< pipeline.parameters.git-user >>] Release version ${PROJECT_VERSION} [skip ci]"
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .
+
+  # Build and test the project
+  build:
+    docker:
+      - image: << pipeline.parameters.docker-image >>
+    steps:
+      - attach_workspace:
+          at: .
+      - restore_cache:
+          keys:
+            - m2-{{ checksum "pom.xml" }}
+            - m2-
+      - run:
+          name: "Get dependencies"
+          command: mvn dependency:go-offline
+      - save_cache:
+          paths:
+            - ~/.m2
+          key: m2-{{ checksum "pom.xml" }}
+      - run:
+          name: "Clean package"
+          command: mvn clean package
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .
+
+  # Release the project: tag, push and release to Github
+  release:
+    docker:
+      - image: << pipeline.parameters.docker-image >>
+    steps:
+      - attach_workspace:
+          at: .
+      - restore_cache:
+          keys:
+            - m2-{{ checksum "pom.xml" }}
+            - m2-
+      - run:
+          name: "Tag and publish"
+          command: |
+            mvn help:evaluate -N -Dexpression=project.version|grep -v '\['
+            PROJECT_VERSION=$(mvn help:evaluate -N -Dexpression=project.version|grep -v '\[')
+            git config user.name "<< pipeline.parameters.git-user >>"
+            git config user.email "<< pipeline.parameters.git-email >>"
+            git tag -a "v${PROJECT_VERSION}" -m "Release ${PROJECT_VERSION}"
+            git push --follow-tags https://${GITHUB_TOKEN}@github.com/egoettelmann/sonar-code-freshness-plugin.git HEAD:<< pipeline.parameters.branch-master >>
+            DATA="{\"tag_name\": \"v${PROJECT_VERSION}\", \"name\": \"${PROJECT_VERSION}\", \"draft\": false, \"prerelease\": false}"
+            SUCCESS=$(curl -H "Authorization: token ${GITHUB_TOKEN}" -d "${DATA}" https://api.github.com/repos/egoettelmann/sonar-code-freshness-plugin/releases)
+            ASSET=$(find ./target -type f -iname "sonar-code-freshness-plugin-*.jar" | head -1)
+            ASSET_NAME=$(basename "${ASSET}")
+            UPLOAD_URL=$(echo "${SUCCESS}" | grep "upload_url")
+            UPLOAD_URL=$(echo "${UPLOAD_URL}" | cut -d "\"" -f4 | cut -d "{" -f1)
+            UPLOAD_URL="${UPLOAD_URL}?name=${ASSET_NAME}"
+            SUCCESS=$(curl -H "Authorization: token ${GITHUB_TOKEN}" -H "Content-Type: application/octet-stream" --data-binary @"${ASSET}" "${UPLOAD_URL}")
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .
+
+  # Prepare next development iteration with SNAPSHOT
+  prepare-next:
+    docker:
+      - image: << pipeline.parameters.docker-image >>
+    steps:
+      - attach_workspace:
+          at: .
+      - restore_cache:
+          keys:
+            - m2-{{ checksum "pom.xml" }}
+            - m2-
+      - run:
+          name: "Push next snapshot"
+          command: |
+            mvn versions:set -DnextSnapshot=true -DgenerateBackupPoms=false
+            mvn help:evaluate -N -Dexpression=project.version|grep -v '\['
+            PROJECT_VERSION=$(mvn help:evaluate -N -Dexpression=project.version|grep -v '\[')
+            mkdir ~/.ssh/ && echo -e "Host github.com\n\tStrictHostKeyChecking no\n" > ~/.ssh/config
+            git config user.name "<< pipeline.parameters.git-user >>"
+            git config user.email "<< pipeline.parameters.git-email >>"
+            git add .
+            git commit -m "[<< pipeline.parameters.git-user >>] Prepare next version ${PROJECT_VERSION} [skip ci]"
+            git config --add remote.origin.fetch +refs/heads/*:refs/remotes/origin/*
+            git fetch --all
+            git merge origin/<< pipeline.parameters.branch-develop >>
+            git push --follow-tags https://${GITHUB_TOKEN}@github.com/egoettelmann/sonar-code-freshness-plugin.git HEAD:<< pipeline.parameters.branch-develop >>
+            git push --delete https://${GITHUB_TOKEN}@github.com/egoettelmann/sonar-code-freshness-plugin.git << pipeline.parameters.branch-release >>
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .
+
+
+workflows:
+  # The main workflow:
+  # - update-version and build
+  # - additionally for 'release' branch: release and prepare-next
+  build-and-deploy:
+    jobs:
+      - update-version:
+          filters:
+            branches:
+              only: /.*/
+      - build:
+          requires:
+            - update-version
+          filters:
+            branches:
+              only: /.*/
+      - release:
+          requires:
+            - build
+          filters:
+            branches:
+              only: << pipeline.parameters.branch-release >>
+      - prepare-next:
+          requires:
+            - release
+          filters:
+            branches:
+              only: << pipeline.parameters.branch-release >>
