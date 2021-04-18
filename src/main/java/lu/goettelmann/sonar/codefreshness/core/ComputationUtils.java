@@ -44,7 +44,7 @@ public class ComputationUtils {
      * @param growthFactor the growth factor between each period defining the rank
      * @return the rank
      */
-    public static Integer getRank(long ageInDays, int basePeriod, int growthFactor) {
+    public static Integer getRank(long ageInDays, int basePeriod, float growthFactor) {
         // Calculating the value using our magic formula
         double value = logN(ageInDays / basePeriod, growthFactor) + 1;
         int rank = (int) Math.ceil(value);
@@ -63,7 +63,7 @@ public class ComputationUtils {
      * @param n the base
      * @return the logN of x
      */
-    public static double logN(long x, int n) {
+    public static double logN(long x, float n) {
         // Calculate logN indirectly using log() method
         return Math.log(x) / Math.log(n);
     }

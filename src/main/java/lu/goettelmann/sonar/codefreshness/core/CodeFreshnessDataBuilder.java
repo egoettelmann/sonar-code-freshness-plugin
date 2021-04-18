@@ -10,13 +10,13 @@ public class CodeFreshnessDataBuilder {
 
     private final Integer basePeriod;
 
-    private final Integer growthFactor;
+    private final Float growthFactor;
 
     private Long avgCommitDate;
 
     private Integer numLines;
 
-    public CodeFreshnessDataBuilder(Integer basePeriod, Integer growthFactor) {
+    public CodeFreshnessDataBuilder(Integer basePeriod, Float growthFactor) {
         this.basePeriod = basePeriod;
         this.growthFactor = growthFactor;
     }

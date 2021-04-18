@@ -56,7 +56,7 @@ public class CodeFreshnessMeasureComputer implements MeasureComputer {
         String basePeriodSetting = context.getSettings().getString(CodeFreshnessProperties.BASE_PERIOD);
         int basePeriod = Integer.parseInt(basePeriodSetting != null ? basePeriodSetting : "3");
         String growthFactorSetting = context.getSettings().getString(CodeFreshnessProperties.GROWTH_FACTOR);
-        int growthFactor = Integer.parseInt(growthFactorSetting != null ? growthFactorSetting : "2");
+        Float growthFactor = Float.parseFloat(growthFactorSetting != null ? growthFactorSetting : "2");
         LOGGER.info("Computing CodeFreshness with basePeriod='{}' and growthFactor='{}'", basePeriod, growthFactor);
 
         // Building data for file
