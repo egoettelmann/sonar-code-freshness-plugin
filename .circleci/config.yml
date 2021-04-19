@@ -4,7 +4,7 @@ version: 2.1
 parameters:
   docker-image:
     type: string
-    default: "circleci/openjdk:8u242-stretch"
+    default: "circleci/openjdk:11-jdk"
   branch-release:
     type: string
     default: "release"
