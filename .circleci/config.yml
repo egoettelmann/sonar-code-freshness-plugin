@@ -75,6 +75,21 @@ jobs:
           paths:
             - .
 
+  # Analyze the project on SonarCloud
+  analyze:
+    docker:
+      - image: << pipeline.parameters.docker-image >>
+    steps:
+      - attach_workspace:
+          at: .
+      - restore_cache:
+          keys:
+            - m2-{{ checksum "pom.xml" }}
+            - m2-
+      - run:
+          name: "Analyze on SonarCloud"
+          command: mvn verify sonar:sonar
+
   # Release the project: tag, push and release to Github
   release:
     docker:
@@ -143,7 +158,7 @@ jobs:
 
 workflows:
   # The main workflow:
-  # - update-version and build
+  # - update-version, build and analyze
   # - additionally for 'release' branch: release and prepare-next
   build-and-deploy:
     jobs:
@@ -154,6 +169,12 @@ workflows:
       - build:
           requires:
             - update-version
+          filters:
+            branches:
+              only: /.*/
+      - analyze:
+          requires:
+            - build
           filters:
             branches:
               only: /.*/
