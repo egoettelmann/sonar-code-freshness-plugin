@@ -19,6 +19,7 @@
  */
 package lu.goettelmann.sonar.codefreshness.measures;
 
+import lu.goettelmann.sonar.codefreshness.core.CodeFreshnessComputer;
 import lu.goettelmann.sonar.codefreshness.core.CodeFreshnessData;
 import lu.goettelmann.sonar.codefreshness.core.CodeFreshnessDataBuilder;
 import lu.goettelmann.sonar.codefreshness.settings.CodeFreshnessProperties;
@@ -28,6 +29,8 @@ import org.sonar.api.ce.measure.MeasureComputer;
 import org.sonar.api.measures.CoreMetrics;
 import org.sonar.api.utils.log.Logger;
 import org.sonar.api.utils.log.Loggers;
+
+import java.time.Instant;
 
 public class CodeFreshnessMeasureComputer implements MeasureComputer {
 
@@ -50,6 +53,15 @@ public class CodeFreshnessMeasureComputer implements MeasureComputer {
                 .build();
     }
 
+    /**
+     * Computes the CodeFreshness measure for a component.
+     *
+     * This method uses {@link Instant#now()}, which is probably correct when using days.
+     * But this means that the reference timestamp used to calculate the age differs for each component.
+     * For more fine grained periods, it may be better to use a common value at analysis level.
+     *
+     * @param context the measure computer context
+     */
     @Override
     public void compute(MeasureComputerContext context) {
         // Extracting properties from settings
@@ -57,7 +69,9 @@ public class CodeFreshnessMeasureComputer implements MeasureComputer {
         int basePeriod = Integer.parseInt(basePeriodSetting != null ? basePeriodSetting : "3");
         String growthFactorSetting = context.getSettings().getString(CodeFreshnessProperties.GROWTH_FACTOR);
         Float growthFactor = Float.parseFloat(growthFactorSetting != null ? growthFactorSetting : "2");
+        long referenceTimestamp = Instant.now().toEpochMilli();
         LOGGER.info("Computing CodeFreshness with basePeriod='{}' and growthFactor='{}'", basePeriod, growthFactor);
+        CodeFreshnessComputer codeFreshnessComputer = new CodeFreshnessComputer(basePeriod, growthFactor, referenceTimestamp);
 
         // Building data for file
         if (context.getComponent().getType() == Component.Type.FILE) {
@@ -68,7 +82,7 @@ public class CodeFreshnessMeasureComputer implements MeasureComputer {
                 return;
             }
             // Building data and adding it to context
-            CodeFreshnessData data = new CodeFreshnessDataBuilder(basePeriod, growthFactor)
+            CodeFreshnessData data = new CodeFreshnessDataBuilder(codeFreshnessComputer)
                     .add(lastCommitDate.getLongValue(), numLines.getIntValue())
                     .build();
             this.save(data, context);
@@ -76,7 +90,7 @@ public class CodeFreshnessMeasureComputer implements MeasureComputer {
         }
 
         // Building data for component (directory)
-        CodeFreshnessDataBuilder builder = new CodeFreshnessDataBuilder(basePeriod, growthFactor);
+        CodeFreshnessDataBuilder builder = new CodeFreshnessDataBuilder(codeFreshnessComputer);
         for (Measure childrenMeasure : context.getChildrenMeasures(CodeFreshnessMetrics.CODE_FRESHNESS_DATA.key())) {
             // Deserializing data of child measure
             String serializedData = childrenMeasure.getStringValue();

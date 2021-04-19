@@ -8,17 +8,14 @@ public class CodeFreshnessDataBuilder {
 
     private static final Logger LOGGER = Loggers.get(CodeFreshnessDataBuilder.class);
 
-    private final Integer basePeriod;
-
-    private final Float growthFactor;
+    private final CodeFreshnessComputer computer;
 
     private Long avgCommitDate;
 
     private Integer numLines;
 
-    public CodeFreshnessDataBuilder(Integer basePeriod, Float growthFactor) {
-        this.basePeriod = basePeriod;
-        this.growthFactor = growthFactor;
+    public CodeFreshnessDataBuilder(CodeFreshnessComputer computer) {
+        this.computer = computer;
     }
 
     public CodeFreshnessDataBuilder add(Long commitDate, Integer numLines) {
@@ -48,10 +45,10 @@ public class CodeFreshnessDataBuilder {
         data.setAvgCommitDate(this.avgCommitDate);
         data.setNumLines(this.numLines);
         // Calculating ageInDays
-        Integer ageInDays = ComputationUtils.getAgeInDays(this.avgCommitDate);
+        Integer ageInDays = computer.getAgeInDays(this.avgCommitDate);
         data.setAgeInDays(ageInDays);
         // Calculating rank
-        Integer rank = ComputationUtils.getRank(ageInDays, this.basePeriod, this.growthFactor);
+        Integer rank = computer.getRank(ageInDays);
         data.setRank(rank);
         return data;
     }

@@ -76,6 +76,8 @@ with:
  - `a`, the `basePeriod`
  - `N`, the `growthFactor`
 
+You can find some example configurations in [CodeFreshnessComputerTest](./src/test/java/lu/goettelmann/sonar/codefreshness/core/CodeFreshnessComputerTest.java).
+
 
 Development
 -----------
