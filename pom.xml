@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>lu.goettelmann.sonar</groupId>
+  <groupId>com.github.egoettelmann</groupId>
   <artifactId>sonar-code-freshness-plugin</artifactId>
   <packaging>sonar-plugin</packaging>
   <version>0.0.3-SNAPSHOT</version>
@@ -59,7 +59,7 @@
         <extensions>true</extensions>
         <configuration>
           <pluginKey>codefreshness</pluginKey>
-          <pluginClass>lu.goettelmann.sonar.codefreshness.CodeFreshnessPlugin</pluginClass>
+          <pluginClass>com.github.egoettelmann.sonar.codefreshness.CodeFreshnessPlugin</pluginClass>
         </configuration>
       </plugin>
       <plugin>

@@ -17,11 +17,11 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package lu.goettelmann.sonar.codefreshness;
+package com.github.egoettelmann.sonar.codefreshness;
 
-import lu.goettelmann.sonar.codefreshness.measures.CodeFreshnessMetrics;
-import lu.goettelmann.sonar.codefreshness.measures.CodeFreshnessMeasureComputer;
-import lu.goettelmann.sonar.codefreshness.settings.CodeFreshnessProperties;
+import com.github.egoettelmann.sonar.codefreshness.settings.CodeFreshnessProperties;
+import com.github.egoettelmann.sonar.codefreshness.measures.CodeFreshnessMetrics;
+import com.github.egoettelmann.sonar.codefreshness.measures.CodeFreshnessMeasureComputer;
 import org.sonar.api.Plugin;
 
 /**

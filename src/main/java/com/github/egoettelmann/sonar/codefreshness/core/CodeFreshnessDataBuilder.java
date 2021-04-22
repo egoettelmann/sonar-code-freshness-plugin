@@ -1,4 +1,4 @@
-package lu.goettelmann.sonar.codefreshness.core;
+package com.github.egoettelmann.sonar.codefreshness.core;
 
 
 import org.sonar.api.utils.log.Logger;

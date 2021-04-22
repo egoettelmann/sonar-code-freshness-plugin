@@ -1,4 +1,4 @@
-package lu.goettelmann.sonar.codefreshness.core;
+package com.github.egoettelmann.sonar.codefreshness.core;
 
 import java.time.Instant;
 import java.time.LocalDate;

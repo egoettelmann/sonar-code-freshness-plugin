@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package lu.goettelmann.sonar.codefreshness.measures;
+package com.github.egoettelmann.sonar.codefreshness.measures;
 
 import org.sonar.api.measures.CoreMetrics;
 import org.sonar.api.measures.Metric;

@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package lu.goettelmann.sonar.codefreshness.settings;
+package com.github.egoettelmann.sonar.codefreshness.settings;
 
 import org.sonar.api.PropertyType;
 import org.sonar.api.config.PropertyDefinition;
